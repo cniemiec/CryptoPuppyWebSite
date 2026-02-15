@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoPuppy</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Outfit:wght@200;300;400&display=swap');
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #000000;
+            --near-black: #0a0a0a;
+            --dark: #111111;
+            --card: #161616;
+            --subtle: #1e1e1e;
+            --muted: #2a2a2a;
+            --silver: #888888;
+            --light-silver: #aaaaaa;
+            --platinum: #c0c0c0;
+            --white: #e8e8e8;
+            --gold: #b8976a;
+            --gold-dim: #8a6f4e;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 200;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        ::selection {
+            background: var(--gold);
+            color: var(--black);
+        }
+
+        /* ── Noise texture overlay ── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            z-index: 9999;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* ── Navigation ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.6s ease;
+        }
+
+        nav.scrolled {
+            padding: 1.2rem 4rem;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(184, 151, 106, 0.08);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-size: 1.1rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--platinum);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--silver);
+            text-decoration: none;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 300;
+            transition: color 0.4s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.4s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--white);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Radial glow behind emblem */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(184, 151, 106, 0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -55%);
+        }
+
+        .emblem-container {
+            position: relative;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1.5s ease 0.3s both;
+        }
+
+        .emblem-container svg {
+            width: 180px;
+            height: 180px;
+            filter: drop-shadow(0 0 60px rgba(184, 151, 106, 0.08));
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--white);
+            animation: fadeInUp 1.5s ease 0.6s both;
+            text-align: center;
+        }
+
+        .hero-line {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 2rem auto;
+            animation: fadeInUp 1.5s ease 0.9s both;
+        }
+
+        .hero-subtitle {
+            font-size: 0.75rem;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--silver);
+            font-weight: 300;
+            animation: fadeInUp 1.5s ease 1.2s both;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeInUp 1.5s ease 2s both;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.55rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--gold-dim), transparent);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        /* ── Statement section ── */
+        .statement {
+            padding: 12rem 4rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .statement p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+            line-height: 2;
+            font-weight: 300;
+            color: var(--light-silver);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease;
+        }
+
+        .statement p.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .statement .gold {
+            color: var(--gold);
+        }
+
+        /* ── Pillars ── */
+        .pillars {
+            padding: 8rem 4rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(184, 151, 106, 0.06);
+        }
+
+        .pillar {
+            background: var(--near-black);
+            padding: 4rem 3rem;
+            text-align: center;
+            position: relative;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .pillar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .pillar-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        .pillar h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--platinum);
+            margin-bottom: 1.5rem;
+        }
+
+        .pillar p {
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: var(--silver);
+            font-weight: 200;
+        }
+
+        /* ── Access section (card) ── */
+        .access {
+            padding: 12rem 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            width: 480px;
+            height: 300px;
+            background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 50%, #1a1a1a 100%);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.6),
+                0 0 1px rgba(184, 151, 106, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            opacity: 0;
+            transform: perspective(1000px) rotateY(-5deg) scale(0.95);
+            transition: all 1s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: perspective(1000px) rotateY(0deg) scale(1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(184, 151, 106, 0.05) 0%, transparent 50%, rgba(184, 151, 106, 0.02) 100%);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-emblem svg {
+            width: 50px;
+            height: 50px;
+            opacity: 0.6;
+        }
+
+        .card-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-size: 1.4rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--platinum);
+        }
+
+        .card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .card-member {
+            font-size: 0.6rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold), var(--gold-dim));
+            border-radius: 5px;
+            opacity: 0.4;
+        }
+
+        /* ── Waitlist ── */
+        .waitlist {
+            padding: 8rem 4rem 12rem;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .waitlist h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--white);
+            margin-bottom: 1.5rem;
+        }
+
+        .waitlist p {
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: var(--silver);
+            margin-bottom: 3rem;
+            font-weight: 200;
+        }
+
+        .waitlist-form {
+            display: flex;
+            gap: 0;
+            border: 1px solid var(--muted);
+            transition: border-color 0.4s ease;
+        }
+
+        .waitlist-form:focus-within {
+            border-color: var(--gold-dim);
+        }
+
+        .waitlist-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 1.2rem 1.5rem;
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 200;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            outline: none;
+        }
+
+        .waitlist-form input::placeholder {
+            color: var(--muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+
+        .waitlist-form button {
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--muted);
+            padding: 1.2rem 2rem;
+            color: var(--gold);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 300;
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .waitlist-form button:hover {
+            background: var(--gold);
+            color: var(--black);
+        }
+
+        .waitlist-note {
+            margin-top: 1.5rem;
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        /* ── Footer ── */
+        footer {
+            padding: 4rem;
+            text-align: center;
+            border-top: 1px solid rgba(184, 151, 106, 0.06);
+        }
+
+        footer p {
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1.5rem 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .pillars {
+                grid-template-columns: 1fr;
+                padding: 4rem 2rem;
+            }
+
+            .statement {
+                padding: 8rem 2rem;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 380px;
+                height: 240px;
+            }
+
+            .access {
+                padding: 8rem 2rem;
+            }
+
+            .waitlist {
+                padding: 4rem 2rem 8rem;
+            }
+
+            .waitlist-form {
+                flex-direction: column;
+            }
+
+            .waitlist-form button {
+                border-left: none;
+                border-top: 1px solid var(--muted);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-brand">CryptoPuppy</div>
+        <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#access">Access</a></li>
+            <li><a href="#waitlist">Request</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="emblem-container">
+            <!-- CryptoPuppy Emblem: geometric/minimal dog silhouette inside a hexagonal shield -->
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8a6f4e;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#b8976a;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#8a6f4e;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="goldGradSubtle" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#b8976a;stop-opacity:0.15" />
+                        <stop offset="100%" style="stop-color:#8a6f4e;stop-opacity:0.05" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Outer hexagonal ring -->
+                <polygon points="100,8 178,38 178,108 100,192 22,108 22,38"
+                    fill="none" stroke="url(#goldGrad)" stroke-width="1" opacity="0.4"/>
+
+                <!-- Inner hexagonal ring -->
+                <polygon points="100,24 166,48 166,104 100,176 34,104 34,48"
+                    fill="url(#goldGradSubtle)" stroke="url(#goldGrad)" stroke-width="0.5" opacity="0.6"/>
+
+                <!-- Stylized dog/puppy head - geometric minimal -->
+                <g transform="translate(100, 90)" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Left ear -->
+                    <path d="M-28,-30 L-38,-58 L-18,-38" opacity="0.8"/>
+                    <!-- Right ear -->
+                    <path d="M28,-30 L38,-58 L18,-38" opacity="0.8"/>
+                    <!-- Head outline -->
+                    <path d="M-28,-30 C-32,-15 -30,0 -24,12 C-18,24 -10,32 0,36 C10,32 18,24 24,12 C30,0 32,-15 28,-30 C24,-42 14,-48 0,-48 C-14,-48 -24,-42 -28,-30" opacity="0.9"/>
+                    <!-- Left eye -->
+                    <circle cx="-14" cy="-14" r="3" fill="url(#goldGrad)" opacity="0.6"/>
+                    <!-- Right eye -->
+                    <circle cx="14" cy="-14" r="3" fill="url(#goldGrad)" opacity="0.6"/>
+                    <!-- Nose -->
+                    <path d="M-5,4 C-5,0 -3,-2 0,-2 C3,-2 5,0 5,4 C5,7 3,9 0,9 C-3,9 -5,7 -5,4Z" fill="url(#goldGrad)" opacity="0.5"/>
+                    <!-- Subtle center line -->
+                    <line x1="0" y1="9" x2="0" y2="18" opacity="0.3"/>
+                </g>
+
+                <!-- Small decorative dots at vertices -->
+                <circle cx="100" cy="8" r="1.5" fill="url(#goldGrad)" opacity="0.4"/>
+                <circle cx="178" cy="38" r="1.5" fill="url(#goldGrad)" opacity="0.4"/>
+                <circle cx="178" cy="108" r="1.5" fill="url(#goldGrad)" opacity="0.4"/>
+                <circle cx="100" cy="192" r="1.5" fill="url(#goldGrad)" opacity="0.4"/>
+                <circle cx="22" cy="108" r="1.5" fill="url(#goldGrad)" opacity="0.4"/>
+                <circle cx="22" cy="38" r="1.5" fill="url(#goldGrad)" opacity="0.4"/>
+            </svg>
+        </div>
+
+        <h1 class="hero-title">CryptoPuppy</h1>
+        <div class="hero-line"></div>
+        <p class="hero-subtitle">By invitation only</p>
+
+        <div class="scroll-indicator">
+            <span>Discover</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- Statement -->
+    <section class="statement" id="about">
+        <p>
+            Some things are not meant to be explained.<br>
+            They are meant to be <span class="gold">experienced</span>.<br><br>
+            CryptoPuppy exists at the intersection of<br>
+            what you know and what you have yet to understand.
+        </p>
+    </section>
+
+    <!-- Pillars -->
+    <section class="pillars">
+        <div class="pillar">
+            <div class="pillar-number">I</div>
+            <h3>Guarded</h3>
+            <p>Every threshold has a gatekeeper. Ours simply has higher standards.</p>
+        </div>
+        <div class="pillar">
+            <div class="pillar-number">II</div>
+            <h3>Sovereign</h3>
+            <p>True ownership requires no permission. It requires only proof.</p>
+        </div>
+        <div class="pillar">
+            <div class="pillar-number">III</div>
+            <h3>Enduring</h3>
+            <p>What is built in silence outlasts what is announced with noise.</p>
+        </div>
+    </section>
+
+    <!-- Access Card -->
+    <section class="access" id="access">
+        <div class="card">
+            <div class="card-content">
+                <div class="card-emblem">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="100,8 178,38 178,108 100,192 22,108 22,38"
+                            fill="none" stroke="url(#goldGrad)" stroke-width="1.5" opacity="0.5"/>
+                        <g transform="translate(100, 90)" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M-28,-30 L-38,-58 L-18,-38" opacity="0.8"/>
+                            <path d="M28,-30 L38,-58 L18,-38" opacity="0.8"/>
+                            <path d="M-28,-30 C-32,-15 -30,0 -24,12 C-18,24 -10,32 0,36 C10,32 18,24 24,12 C30,0 32,-15 28,-30 C24,-42 14,-48 0,-48 C-14,-48 -24,-42 -28,-30" opacity="0.9"/>
+                            <circle cx="-14" cy="-14" r="3" fill="url(#goldGrad)" opacity="0.6"/>
+                            <circle cx="14" cy="-14" r="3" fill="url(#goldGrad)" opacity="0.6"/>
+                            <path d="M-5,4 C-5,0 -3,-2 0,-2 C3,-2 5,0 5,4 C5,7 3,9 0,9 C-3,9 -5,7 -5,4Z" fill="url(#goldGrad)" opacity="0.5"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="card-bottom">
+                    <div>
+                        <div class="card-name">CryptoPuppy</div>
+                        <div class="card-member">Member since genesis</div>
+                    </div>
+                    <div class="card-chip"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Waitlist -->
+    <section class="waitlist" id="waitlist">
+        <h2>Request Access</h2>
+        <p>Membership is not applied for. It is extended.<br>Leave your coordinates and we will find you.</p>
+        <form class="waitlist-form" onsubmit="handleSubmit(event)">
+            <input type="email" placeholder="Your email" required autocomplete="off" spellcheck="false">
+            <button type="submit">Request</button>
+        </form>
+        <p class="waitlist-note">Current wait: undisclosed</p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 CryptoPuppy &mdash; All rights reserved</p>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 80);
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.statement p, .pillar, .card').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Form submission
+        function handleSubmit(e) {
+            e.preventDefault();
+            const input = e.target.querySelector('input');
+            const button = e.target.querySelector('button');
+            const original = button.textContent;
+            button.textContent = 'NOTED';
+            button.style.background = 'var(--gold)';
+            button.style.color = 'var(--black)';
+            input.value = '';
+            setTimeout(() => {
+                button.textContent = original;
+                button.style.background = '';
+                button.style.color = '';
+            }, 2500);
+        }
+
+        // Subtle parallax on emblem
+        const emblem = document.querySelector('.emblem-container');
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 8;
+            const y = (e.clientY / window.innerHeight - 0.5) * 8;
+            emblem.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    </script>
+</body>
+</html>
