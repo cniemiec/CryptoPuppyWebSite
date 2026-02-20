@@ -947,8 +947,8 @@
     <section class="waitlist" id="waitlist">
         <h2>Request Access</h2>
         <p>Membership is not applied for. It is extended.<br>Leave your coordinates and we will find you.</p>
-        <form class="waitlist-form" onsubmit="handleSubmit(event)">
-            <input type="email" placeholder="Your email" required autocomplete="off" spellcheck="false">
+        <form class="waitlist-form" id="waitlistForm" onsubmit="handleSubmit(event)">
+            <input type="email" name="email" placeholder="Your email" required autocomplete="off" spellcheck="false">
             <button type="submit">Request</button>
         </form>
         <p class="waitlist-note">Current wait: undisclosed</p>
@@ -1001,21 +1001,44 @@
             observer.observe(el);
         });
 
-        // Form submission
+        // Form submission via Formspree
         function handleSubmit(e) {
             e.preventDefault();
-            const input = e.target.querySelector('input');
-            const button = e.target.querySelector('button');
+            const form = e.target;
+            const input = form.querySelector('input');
+            const button = form.querySelector('button');
             const original = button.textContent;
-            button.textContent = 'NOTED';
-            button.style.background = 'var(--gold)';
-            button.style.color = 'var(--black)';
-            input.value = '';
-            setTimeout(() => {
-                button.textContent = original;
-                button.style.background = '';
-                button.style.color = '';
-            }, 2500);
+
+            button.textContent = 'SENDING';
+            button.disabled = true;
+
+            fetch('https://formspree.io/f/mjgeerla', {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: new FormData(form)
+            }).then(response => {
+                if (response.ok) {
+                    button.textContent = 'NOTED';
+                    button.style.background = 'var(--gold)';
+                    button.style.color = 'var(--black)';
+                    input.value = '';
+                } else {
+                    button.textContent = 'ERROR';
+                    button.style.background = '#4a2020';
+                    button.style.color = 'var(--white)';
+                }
+            }).catch(() => {
+                button.textContent = 'ERROR';
+                button.style.background = '#4a2020';
+                button.style.color = 'var(--white)';
+            }).finally(() => {
+                button.disabled = false;
+                setTimeout(() => {
+                    button.textContent = original;
+                    button.style.background = '';
+                    button.style.color = '';
+                }, 2500);
+            });
         }
 
         // Subtle parallax on emblem — desktop only (no touch)
